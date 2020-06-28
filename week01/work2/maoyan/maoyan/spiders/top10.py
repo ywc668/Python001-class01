@@ -10,7 +10,7 @@ class Top10Spider(scrapy.Spider):
     start_urls = ["https://maoyan.com/films?showType=3"]
 
     def request(self, url, callback):
-        cookie_text = 'uuid_n_v=v1; uuid=9EB2A080B96A11EA9F28E30FF5FFF73CB5154A84C7A94D1DAB10BB8C2D31FEB8; _csrf=448d5750ef63e51bf723695e9008d2c176352dad7c0fc460f422f517baa014ba; Hm_lvt_703e94591e87be68cc8da0da7cbd0be2=1593367820; _lxsdk_cuid=172fc1f7724c8-098b7ae06bfb5b-39647b09-1fa400-172fc1f7724c8; _lxsdk=9EB2A080B96A11EA9F28E30FF5FFF73CB5154A84C7A94D1DAB10BB8C2D31FEB8; mojo-uuid=005c478c1b1c76a729dcde705c8ea14b; mojo-session-id={"id":"2749c8c2bea2ee39e46c57deda270ee5","time":1593387106486}; mojo-trace-id=1; Hm_lpvt_703e94591e87be68cc8da0da7cbd0be2=1593387107; __mta=147693064.1593367823108.1593379350408.1593387107295.9; _lxsdk_s=172fd4449b1-687-c0b-19b%7C%7C3'
+        cookie_text = 'uuid_n_v=v1; uuid=9EB2A080B96A11EA9F28E30FF5FFF73CB5154A84C7A94D1DAB10BB8C2D31FEB8; _csrf=448d5750ef63e51bf723695e9008d2c176352dad7c0fc460f422f517baa014ba; Hm_lvt_703e94591e87be68cc8da0da7cbd0be2=1593367820; _lxsdk_cuid=172fc1f7724c8-098b7ae06bfb5b-39647b09-1fa400-172fc1f7724c8; _lxsdk=9EB2A080B96A11EA9F28E30FF5FFF73CB5154A84C7A94D1DAB10BB8C2D31FEB8; mojo-uuid=005c478c1b1c76a729dcde705c8ea14b; mojo-session-id={"id":"2749c8c2bea2ee39e46c57deda270ee5","time":1593387106486}; mojo-trace-id=6; Hm_lpvt_703e94591e87be68cc8da0da7cbd0be2=1593387742; __mta=147693064.1593367823108.1593387730201.1593387742702.13; _lxsdk_s=172fd4449b1-687-c0b-19b%7C%7C12'
         cookie = SimpleCookie(cookie_text)
         cookie_dict = {cookie.key : cookie.value for cookie in cookie.values()}
         request = scrapy.Request(url=url, callback=callback)
@@ -25,7 +25,7 @@ class Top10Spider(scrapy.Spider):
             '//div[@class="movie-hover-info"]'
         )
         print(movie_infos)
-        for movie_info in movie_infos:
+        for movie_info in movie_infos[:10]:
             movie_item = MaoyanItem()
             if "title" not in movie_item:
                 movie_item["title"] = movie_info.xpath(
