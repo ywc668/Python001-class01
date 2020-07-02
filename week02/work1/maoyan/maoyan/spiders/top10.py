@@ -5,7 +5,9 @@ import scrapy
 from maoyan.items import MaoyanItem
 from maoyan.settings import DB_SETTINGS
 from scrapy.selector import Selector
-
+from scrapy.spidermiddlewares.httperror import HttpError
+from twisted.internet.error import DNSLookupError
+from twisted.internet.error import TimeoutError
 
 class Top10Spider(scrapy.Spider):
     name = "top10"
@@ -28,16 +30,16 @@ class Top10Spider(scrapy.Spider):
     def __del__(self):
         self.connection.close()
 
-    def request(self, url, callback):
+    def request(self, url, callback, err_callback):
         cookie_text = 'uuid_n_v=v1; uuid=9EB2A080B96A11EA9F28E30FF5FFF73CB5154A84C7A94D1DAB10BB8C2D31FEB8; _csrf=448d5750ef63e51bf723695e9008d2c176352dad7c0fc460f422f517baa014ba; Hm_lvt_703e94591e87be68cc8da0da7cbd0be2=1593367820; _lxsdk_cuid=172fc1f7724c8-098b7ae06bfb5b-39647b09-1fa400-172fc1f7724c8; _lxsdk=9EB2A080B96A11EA9F28E30FF5FFF73CB5154A84C7A94D1DAB10BB8C2D31FEB8; mojo-uuid=005c478c1b1c76a729dcde705c8ea14b; Hm_lpvt_703e94591e87be68cc8da0da7cbd0be2=1593500815; __mta=147693064.1593367823108.1593500797746.1593500814850.16; _lxsdk_s=173065bd698-1d5-a44-de2%7C%7C1'
         cookie = SimpleCookie(cookie_text)
         cookie_dict = {cookie.key: cookie.value for cookie in cookie.values()}
-        request = scrapy.Request(url=url, callback=callback)
+        request = scrapy.Request(url=url, callback=callback, errback=err_callback)
         request.cookies = cookie_dict
         return request
 
     def start_requests(self):
-        yield self.request(self.start_urls[0], self.parse)
+        yield self.request(self.start_urls[0], self.parse, self.errback)
 
     def parse(self, response):
         movie_infos = Selector(response=response).xpath(
@@ -65,3 +67,16 @@ class Top10Spider(scrapy.Spider):
                 .strip()
             )
             yield movie_item
+
+    def errback(self, e):
+        self.logger.error(str(e))
+
+        if e.check(HttpError):
+            response = e.value.response
+            self.logger.error('HttpError on %s', response.url)
+        elif e.check(DNSLookupError):
+            response = e.request
+            self.logger.error('DNSLookupError on %s', request.url)
+        elif e.check(TimeoutError):
+            response = e.request
+            self.logger.error('TimeoutError on %s', request.url)
