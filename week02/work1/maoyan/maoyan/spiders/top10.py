@@ -3,7 +3,7 @@ from http.cookies import SimpleCookie
 import pymysql
 import scrapy
 from maoyan.items import MaoyanItem
-from maoyan.spiders.db_settings import DB_SETTINGS
+from maoyan.settings import DB_SETTINGS
 from scrapy.selector import Selector
 
 
